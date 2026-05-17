@@ -141,7 +141,7 @@ function renderTasks() {
                 <div class="task-title">${escapeHTML(task.title)}</div>
                 ${task.description ? `<div class="task-desc">${escapeHTML(task.description)}</div>` : ''}
                 <div class="task-meta">
-                    <span class="tag date"><i class="fa-regular fa-calendar"></i> ${task.date}</span>
+                    ${task.date ? `<span class="tag date"><i class="fa-regular fa-calendar"></i> ${task.date}</span>` : ''}
                     <span class="tag priority-${task.priority}">${task.priority}</span>
                 </div>
             </div>
