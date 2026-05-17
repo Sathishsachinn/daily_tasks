@@ -11,16 +11,26 @@
 </head>
 <body class="light-mode">
     <div class="app-container">
+        <!-- Overlay -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
         <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header" style="display: flex; align-items: center; justify-content: space-between;">
                 <h2><i class="fa-solid fa-check-double"></i> TaskMaster</h2>
+                <button id="close-sidebar-btn" class="icon-btn mobile-only" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="sidebar-menu">
+                <h3>Overview</h3>
+                <ul id="overview-list">
+                    <li class="active" data-section="Dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</li>
+                    <li data-section="All"><i class="fa-solid fa-layer-group"></i> All Tasks</li>
+                </ul>
+
                 <h3>Sections</h3>
                 <ul id="section-list">
-                    <li class="active" data-section="Daily"><i class="fa-solid fa-sun"></i> Daily Tasks</li>
+                    <li data-section="Daily"><i class="fa-solid fa-sun"></i> Daily Tasks</li>
                     <li data-section="Weekly"><i class="fa-solid fa-calendar-week"></i> Weekly Tasks</li>
                     <li data-section="Monthly"><i class="fa-solid fa-calendar-days"></i> Monthly Tasks</li>
                     <li data-section="Yearly"><i class="fa-solid fa-bullseye"></i> Yearly Goals</li>
@@ -38,9 +48,12 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="top-header">
-                <div class="search-bar">
-                    <i class="fa-solid fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Search tasks...">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button id="mobile-menu-btn" class="icon-btn mobile-only" style="display: none;"><i class="fa-solid fa-bars"></i></button>
+                    <div class="search-bar">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Search tasks...">
+                    </div>
                 </div>
                 <div class="header-actions">
                     <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
@@ -48,9 +61,99 @@
                 </div>
             </header>
 
-            <div class="tasks-container">
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="dashboard-container">
+                <div class="dashboard-header">
+                    <h1>Dashboard Overview</h1>
+                    <p class="subtitle">Here's your productivity at a glance.</p>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <!-- Stat Cards -->
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(67, 24, 255, 0.1); color: var(--primary-color);"><i class="fa-solid fa-list-check"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Tasks</h3>
+                            <h2 id="dash-total">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(5, 205, 153, 0.1); color: var(--success-color);"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <h3>Completed</h3>
+                            <h2 id="dash-completed">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(255, 206, 32, 0.1); color: var(--warning-color);"><i class="fa-solid fa-clock"></i></div>
+                        <div class="stat-info">
+                            <h3>Pending</h3>
+                            <h2 id="dash-pending">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(238, 93, 80, 0.1); color: var(--danger-color);"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="stat-info">
+                            <h3>Productivity</h3>
+                            <h2 id="dash-productivity">0%</h2>
+                        </div>
+                    </div>
+
+                    <!-- Progress Section -->
+                    <div class="dashboard-card progress-section">
+                        <h3>Goal Progress</h3>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Daily Tasks <small id="dash-daily-stats" style="color:var(--text-secondary); margin-left: 8px; font-weight: normal;"></small></span>
+                                <span id="dash-daily-text">0/0</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="dash-daily-bar" style="width: 0%; background: #05cd99;"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Weekly Tasks <small id="dash-weekly-stats" style="color:var(--text-secondary); margin-left: 8px; font-weight: normal;"></small></span>
+                                <span id="dash-weekly-text">0/0</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="dash-weekly-bar" style="width: 0%; background: var(--primary-color);"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Monthly Tasks <small id="dash-monthly-stats" style="color:var(--text-secondary); margin-left: 8px; font-weight: normal;"></small></span>
+                                <span id="dash-monthly-text">0/0</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="dash-monthly-bar" style="width: 0%; background: var(--warning-color);"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Yearly Goals <small id="dash-yearly-stats" style="color:var(--text-secondary); margin-left: 8px; font-weight: normal;"></small></span>
+                                <span id="dash-yearly-text">0/0</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="dash-yearly-bar" style="width: 0%; background: var(--danger-color);"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Deadlines -->
+                    <div class="dashboard-card upcoming-section">
+                        <h3>Upcoming Deadlines</h3>
+                        <div id="dash-upcoming-list" class="upcoming-list">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks View -->
+            <div id="tasks-view" class="tasks-container hidden">
                 <div class="section-header">
-                    <h1 id="current-section-title">Daily Tasks</h1>
+                    <h1 id="current-section-title">Dashboard</h1>
                     <span id="task-count">0 tasks</span>
                 </div>
                 

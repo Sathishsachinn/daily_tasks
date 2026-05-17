@@ -2,13 +2,36 @@ const API_URL = '/api/tasks';
 let useLocalStorage = false; // Flag to fall back to LocalStorage
 
 // DOM Elements
-const sectionItems = document.querySelectorAll('#section-list li');
+const sectionItems = document.querySelectorAll('.sidebar-menu li[data-section]');
 const filterItems = document.querySelectorAll('#filter-list li');
 const tasksList = document.getElementById('tasks-list');
 const currentSectionTitle = document.getElementById('current-section-title');
 const taskCount = document.getElementById('task-count');
 const searchInput = document.getElementById('search-input');
 const themeToggle = document.getElementById('theme-toggle');
+
+const dashboardView = document.getElementById('dashboard-view');
+const tasksView = document.getElementById('tasks-view');
+
+const dashTotal = document.getElementById('dash-total');
+const dashCompleted = document.getElementById('dash-completed');
+const dashPending = document.getElementById('dash-pending');
+const dashProductivity = document.getElementById('dash-productivity');
+
+const dashDailyBar = document.getElementById('dash-daily-bar');
+const dashDailyText = document.getElementById('dash-daily-text');
+const dashDailyStats = document.getElementById('dash-daily-stats');
+const dashWeeklyBar = document.getElementById('dash-weekly-bar');
+const dashWeeklyText = document.getElementById('dash-weekly-text');
+const dashWeeklyStats = document.getElementById('dash-weekly-stats');
+const dashMonthlyBar = document.getElementById('dash-monthly-bar');
+const dashMonthlyText = document.getElementById('dash-monthly-text');
+const dashMonthlyStats = document.getElementById('dash-monthly-stats');
+const dashYearlyBar = document.getElementById('dash-yearly-bar');
+const dashYearlyText = document.getElementById('dash-yearly-text');
+const dashYearlyStats = document.getElementById('dash-yearly-stats');
+
+const dashUpcomingList = document.getElementById('dash-upcoming-list');
 
 // Modal Elements
 const modal = document.getElementById('task-modal');
@@ -20,7 +43,7 @@ const modalTitle = document.getElementById('modal-title');
 
 // State
 let tasks = [];
-let currentSection = 'Daily';
+let currentSection = 'Dashboard';
 let currentFilter = 'All';
 let searchQuery = '';
 
@@ -69,14 +92,22 @@ async function fetchTasks() {
 
 // Render Tasks based on state
 function renderTasks() {
+    if (currentSection === 'Dashboard') {
+        renderDashboard();
+        return;
+    }
+    
     tasksList.innerHTML = '';
     
-    let filteredTasks = tasks.filter(task => task.section === currentSection);
+    // Helper to evaluate completion strictly
+    const isTaskCompleted = (task) => task.completed === 1 || task.completed === true || task.completed === "1" || task.completed === "true";
+
+    let filteredTasks = tasks.filter(task => currentSection === 'All' || task.section === currentSection);
     
     if (currentFilter === 'Pending') {
-        filteredTasks = filteredTasks.filter(task => !task.completed);
+        filteredTasks = filteredTasks.filter(task => !isTaskCompleted(task));
     } else if (currentFilter === 'Completed') {
-        filteredTasks = filteredTasks.filter(task => task.completed);
+        filteredTasks = filteredTasks.filter(task => isTaskCompleted(task));
     }
     
     if (searchQuery) {
@@ -99,10 +130,11 @@ function renderTasks() {
     }
 
     filteredTasks.forEach(task => {
+        const isCompleted = isTaskCompleted(task);
         const taskEl = document.createElement('div');
-        taskEl.className = `task-card ${task.completed ? 'completed' : ''}`;
+        taskEl.className = `task-card ${isCompleted ? 'completed' : ''}`;
         taskEl.innerHTML = `
-            <div class="task-checkbox" onclick="toggleTaskStatus(${task.id}, ${!task.completed})">
+            <div class="task-checkbox">
                 <i class="fa-solid fa-check"></i>
             </div>
             <div class="task-content">
@@ -114,10 +146,21 @@ function renderTasks() {
                 </div>
             </div>
             <div class="task-actions">
-                <button class="icon-btn" onclick="openEditModal(${task.id})"><i class="fa-solid fa-pen"></i></button>
-                <button class="icon-btn" onclick="deleteTask(${task.id})" style="color: var(--danger-color);"><i class="fa-solid fa-trash"></i></button>
+                <button class="icon-btn edit-btn"><i class="fa-solid fa-pen"></i></button>
+                <button class="icon-btn delete-btn" style="color: var(--danger-color);"><i class="fa-solid fa-trash"></i></button>
             </div>
         `;
+        
+        // Add event listeners securely
+        const checkbox = taskEl.querySelector('.task-checkbox');
+        checkbox.addEventListener('click', () => toggleTaskStatus(task.id, !isCompleted));
+        
+        const editBtn = taskEl.querySelector('.edit-btn');
+        editBtn.addEventListener('click', () => openEditModal(task.id));
+        
+        const deleteBtn = taskEl.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', () => deleteTask(task.id));
+
         tasksList.appendChild(taskEl);
     });
 }
@@ -137,12 +180,11 @@ taskForm.addEventListener('submit', async (e) => {
 
     if (useLocalStorage) {
         if (id) {
-            const taskId = parseInt(id, 10);
-            const index = tasks.findIndex(t => t.id === taskId);
+            const index = tasks.findIndex(t => String(t.id) === String(id));
             if (index !== -1) tasks[index] = { ...tasks[index], ...taskData };
         } else {
-            const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
-            tasks.push({ id: newId, ...taskData, completed: false });
+            const newId = tasks.length > 0 ? Math.max(...tasks.map(t => parseInt(t.id) || 0)) + 1 : 1;
+            tasks.push({ id: String(newId), ...taskData, completed: false });
         }
         saveToLocalStorage();
         renderTasks();
@@ -174,7 +216,7 @@ taskForm.addEventListener('submit', async (e) => {
 // Toggle Task Status
 window.toggleTaskStatus = async function(id, completed) {
     if (useLocalStorage) {
-        const index = tasks.findIndex(t => t.id === id);
+        const index = tasks.findIndex(t => String(t.id) === String(id));
         if (index !== -1) {
             tasks[index].completed = completed;
             saveToLocalStorage();
@@ -199,7 +241,7 @@ window.toggleTaskStatus = async function(id, completed) {
 window.deleteTask = async function(id) {
     if (confirm('Are you sure you want to delete this task?')) {
         if (useLocalStorage) {
-            tasks = tasks.filter(t => t.id !== id);
+            tasks = tasks.filter(t => String(t.id) !== String(id));
             saveToLocalStorage();
             renderTasks();
             return;
@@ -218,14 +260,45 @@ window.deleteTask = async function(id) {
 
 // UI Event Listeners
 
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+function toggleSidebar() {
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('open');
+}
+
+if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleSidebar);
+if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', toggleSidebar);
+if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+
+function closeSidebarOnMobile() {
+    if (window.innerWidth <= 768) {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('open');
+    }
+}
+
 // Sections
 sectionItems.forEach(item => {
     item.addEventListener('click', () => {
         sectionItems.forEach(i => i.classList.remove('active'));
         item.classList.add('active');
         currentSection = item.dataset.section;
-        currentSectionTitle.textContent = `${currentSection} Tasks`;
+        
+        if (currentSection === 'Dashboard') {
+            dashboardView.classList.remove('hidden');
+            tasksView.classList.add('hidden');
+        } else {
+            dashboardView.classList.add('hidden');
+            tasksView.classList.remove('hidden');
+            currentSectionTitle.textContent = currentSection === 'All' ? 'All Tasks' : `${currentSection} Tasks`;
+        }
+        
         renderTasks();
+        closeSidebarOnMobile();
     });
 });
 
@@ -236,6 +309,7 @@ filterItems.forEach(item => {
         item.classList.add('active');
         currentFilter = item.dataset.filter;
         renderTasks();
+        closeSidebarOnMobile();
     });
 });
 
@@ -255,14 +329,15 @@ addTaskBtn.addEventListener('click', () => {
     document.getElementById('task-date').value = today;
     
     // Set default section to current selected section
-    document.getElementById('task-section').value = currentSection;
+    const defaultSection = (currentSection === 'Dashboard' || currentSection === 'All') ? 'Daily' : currentSection;
+    document.getElementById('task-section').value = defaultSection;
 
     modalTitle.textContent = 'Add New Task';
     modal.classList.remove('hidden');
 });
 
 window.openEditModal = function(id) {
-    const task = tasks.find(t => t.id === id);
+    const task = tasks.find(t => String(t.id) === String(id));
     if (task) {
         document.getElementById('task-id').value = task.id;
         document.getElementById('task-title').value = task.title;
@@ -301,7 +376,8 @@ themeToggle.addEventListener('click', () => {
 
 // Utility
 function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, 
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
         tag => ({
             '&': '&amp;',
             '<': '&lt;',
@@ -310,4 +386,72 @@ function escapeHTML(str) {
             '"': '&quot;'
         }[tag] || tag)
     );
+}
+
+// Render Dashboard Statistics
+function renderDashboard() {
+    const isTaskCompleted = (t) => t.completed === 1 || t.completed === true || t.completed === "1" || t.completed === "true";
+
+    const total = tasks.length;
+    const completed = tasks.filter(isTaskCompleted).length;
+    const pending = total - completed;
+    const productivity = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+    dashTotal.textContent = total;
+    dashCompleted.textContent = completed;
+    dashPending.textContent = pending;
+    dashProductivity.textContent = `${productivity}%`;
+
+    // Progress calculations
+    const calculateProgress = (sectionName) => {
+        const secTasks = tasks.filter(t => t.section === sectionName);
+        const secTotal = secTasks.length;
+        const secCompleted = secTasks.filter(isTaskCompleted).length;
+        const secPending = secTotal - secCompleted;
+        const percent = secTotal === 0 ? 0 : Math.round((secCompleted / secTotal) * 100);
+        return { total: secTotal, completed: secCompleted, pending: secPending, percent };
+    };
+
+    const daily = calculateProgress('Daily');
+    dashDailyText.textContent = `${daily.percent}%`;
+    dashDailyStats.textContent = `(${daily.completed} completed, ${daily.pending} pending)`;
+    dashDailyBar.style.width = `${daily.percent}%`;
+
+    const weekly = calculateProgress('Weekly');
+    dashWeeklyText.textContent = `${weekly.percent}%`;
+    dashWeeklyStats.textContent = `(${weekly.completed} completed, ${weekly.pending} pending)`;
+    dashWeeklyBar.style.width = `${weekly.percent}%`;
+
+    const monthly = calculateProgress('Monthly');
+    dashMonthlyText.textContent = `${monthly.percent}%`;
+    dashMonthlyStats.textContent = `(${monthly.completed} completed, ${monthly.pending} pending)`;
+    dashMonthlyBar.style.width = `${monthly.percent}%`;
+
+    const yearly = calculateProgress('Yearly');
+    dashYearlyText.textContent = `${yearly.percent}%`;
+    dashYearlyStats.textContent = `(${yearly.completed} completed, ${yearly.pending} pending)`;
+    dashYearlyBar.style.width = `${yearly.percent}%`;
+
+    // Upcoming Deadlines
+    const pendingTasks = tasks.filter(t => !isTaskCompleted(t) && t.date);
+    pendingTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const upcoming = pendingTasks.slice(0, 4);
+
+    dashUpcomingList.innerHTML = '';
+    if (upcoming.length === 0) {
+        dashUpcomingList.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px;">No upcoming deadlines.</p>';
+    } else {
+        upcoming.forEach(task => {
+            const dateStr = new Date(task.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            dashUpcomingList.innerHTML += `
+                <div class="upcoming-item">
+                    <div class="upcoming-item-left">
+                        <div class="upcoming-title">${escapeHTML(task.title)}</div>
+                        <div class="upcoming-date"><i class="fa-regular fa-clock"></i> ${dateStr}</div>
+                    </div>
+                    <span class="tag priority-${task.priority}">${task.priority}</span>
+                </div>
+            `;
+        });
+    }
 }
