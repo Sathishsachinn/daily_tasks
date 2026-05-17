@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3000/api/tasks';
+const API_URL = '/api/tasks';
+let useLocalStorage = false; // Flag to fall back to LocalStorage
 
 // DOM Elements
 const sectionItems = document.querySelectorAll('#section-list li');
@@ -35,17 +36,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Load Tasks from LocalStorage Fallback
+function loadFromLocalStorage() {
+    useLocalStorage = true;
+    const savedTasks = localStorage.getItem('tasks');
+    if (savedTasks) {
+        tasks = JSON.parse(savedTasks);
+    }
+    renderTasks();
+}
+
+// Save to LocalStorage Fallback
+function saveToLocalStorage() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
 // Fetch tasks from API
 async function fetchTasks() {
     try {
         const res = await fetch(API_URL);
+        if (!res.ok) throw new Error("API not available");
         const data = await res.json();
         if (data.message === 'success') {
             tasks = data.data;
             renderTasks();
         }
     } catch (err) {
-        console.error('Error fetching tasks:', err);
+        console.log('Falling back to LocalStorage');
+        loadFromLocalStorage();
     }
 }
 
@@ -117,16 +135,29 @@ taskForm.addEventListener('submit', async (e) => {
         section: document.getElementById('task-section').value
     };
 
+    if (useLocalStorage) {
+        if (id) {
+            const taskId = parseInt(id, 10);
+            const index = tasks.findIndex(t => t.id === taskId);
+            if (index !== -1) tasks[index] = { ...tasks[index], ...taskData };
+        } else {
+            const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+            tasks.push({ id: newId, ...taskData, completed: false });
+        }
+        saveToLocalStorage();
+        renderTasks();
+        closeModalFunc();
+        return;
+    }
+
     try {
         if (id) {
-            // Update
             await fetch(`${API_URL}/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(taskData)
             });
         } else {
-            // Add
             await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -141,7 +172,17 @@ taskForm.addEventListener('submit', async (e) => {
 });
 
 // Toggle Task Status
-async function toggleTaskStatus(id, completed) {
+window.toggleTaskStatus = async function(id, completed) {
+    if (useLocalStorage) {
+        const index = tasks.findIndex(t => t.id === id);
+        if (index !== -1) {
+            tasks[index].completed = completed;
+            saveToLocalStorage();
+            renderTasks();
+        }
+        return;
+    }
+
     try {
         await fetch(`${API_URL}/${id}`, {
             method: 'PUT',
@@ -152,11 +193,18 @@ async function toggleTaskStatus(id, completed) {
     } catch (err) {
         console.error('Error updating task status:', err);
     }
-}
+};
 
 // Delete Task
-async function deleteTask(id) {
+window.deleteTask = async function(id) {
     if (confirm('Are you sure you want to delete this task?')) {
+        if (useLocalStorage) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveToLocalStorage();
+            renderTasks();
+            return;
+        }
+
         try {
             await fetch(`${API_URL}/${id}`, {
                 method: 'DELETE'
@@ -166,7 +214,7 @@ async function deleteTask(id) {
             console.error('Error deleting task:', err);
         }
     }
-}
+};
 
 // UI Event Listeners
 
@@ -213,7 +261,7 @@ addTaskBtn.addEventListener('click', () => {
     modal.classList.remove('hidden');
 });
 
-function openEditModal(id) {
+window.openEditModal = function(id) {
     const task = tasks.find(t => t.id === id);
     if (task) {
         document.getElementById('task-id').value = task.id;
@@ -226,7 +274,7 @@ function openEditModal(id) {
         modalTitle.textContent = 'Edit Task';
         modal.classList.remove('hidden');
     }
-}
+};
 
 function closeModalFunc() {
     modal.classList.add('hidden');

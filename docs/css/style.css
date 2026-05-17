@@ -451,15 +451,25 @@ input:focus, textarea:focus, select:focus {
         display: flex;
         overflow-x: auto;
         gap: 16px;
+        padding-bottom: 8px;
     }
+    .sidebar-menu::-webkit-scrollbar { height: 4px; }
+    .sidebar-menu::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
     .sidebar-menu h3 { display: none; }
     .sidebar-menu ul { display: flex; margin-bottom: 0; }
     .sidebar-menu li { white-space: nowrap; }
     
     .top-header {
-        padding: 0 16px;
+        padding: 16px;
+        height: auto;
+        flex-direction: column;
+        gap: 16px;
     }
-    .search-bar { width: auto; flex: 1; margin-right: 16px; }
+    .search-bar { width: 100%; margin-right: 0; }
+    .header-actions { width: 100%; justify-content: space-between; }
     .tasks-container { padding: 20px; }
-    .modal-content { width: 90%; }
+    .section-header h1 { font-size: 24px; }
+    .modal-content { width: 95%; max-height: 90vh; overflow-y: auto; }
+    .form-row { flex-direction: column; gap: 0; }
+    .task-meta { flex-wrap: wrap; }
 }
