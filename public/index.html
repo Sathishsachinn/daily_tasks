@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern To-Do List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="light-mode">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fa-solid fa-check-double"></i> TaskMaster</h2>
+            </div>
+            
+            <div class="sidebar-menu">
+                <h3>Sections</h3>
+                <ul id="section-list">
+                    <li class="active" data-section="Daily"><i class="fa-solid fa-sun"></i> Daily Tasks</li>
+                    <li data-section="Weekly"><i class="fa-solid fa-calendar-week"></i> Weekly Tasks</li>
+                    <li data-section="Monthly"><i class="fa-solid fa-calendar-days"></i> Monthly Tasks</li>
+                    <li data-section="Yearly"><i class="fa-solid fa-bullseye"></i> Yearly Goals</li>
+                </ul>
+
+                <h3>Filters</h3>
+                <ul id="filter-list">
+                    <li class="active" data-filter="All"><i class="fa-solid fa-list"></i> All Tasks</li>
+                    <li data-filter="Pending"><i class="fa-regular fa-circle"></i> Pending</li>
+                    <li data-filter="Completed"><i class="fa-solid fa-circle-check"></i> Completed</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="search-bar">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Search tasks...">
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
+                    <button id="add-task-btn" class="primary-btn"><i class="fa-solid fa-plus"></i> Add Task</button>
+                </div>
+            </header>
+
+            <div class="tasks-container">
+                <div class="section-header">
+                    <h1 id="current-section-title">Daily Tasks</h1>
+                    <span id="task-count">0 tasks</span>
+                </div>
+                
+                <div id="tasks-list" class="tasks-list">
+                    <!-- Tasks will be injected here via JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Task Modal (Add/Edit) -->
+    <div id="task-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Add New Task</h2>
+                <button id="close-modal" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="task-form">
+                <input type="hidden" id="task-id">
+                
+                <div class="form-group">
+                    <label for="task-title">Title</label>
+                    <input type="text" id="task-title" required placeholder="What needs to be done?">
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-desc">Description</label>
+                    <textarea id="task-desc" rows="3" placeholder="Add details..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-date">Date</label>
+                        <input type="date" id="task-date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="task-priority">Priority</label>
+                        <select id="task-priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-section">Section</label>
+                    <select id="task-section">
+                        <option value="Daily" selected>Daily Tasks</option>
+                        <option value="Weekly">Weekly Tasks</option>
+                        <option value="Monthly">Monthly Tasks</option>
+                        <option value="Yearly">Yearly Goals</option>
+                    </select>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" id="cancel-btn" class="secondary-btn">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
