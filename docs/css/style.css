@@ -653,6 +653,28 @@ input:focus, textarea:focus, select:focus {
     
     .modal-content { width: 92%; padding: 20px; max-height: 90vh; overflow-y: auto;}
     .form-row { flex-direction: column; gap: 0; }
+
+    /* Responsive Secret Notes */
+    .secret-notes-container {
+        padding: 16px;
+    }
+    .secret-input-area {
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    #add-secret-note-btn {
+        padding: 14px 16px !important;
+    }
+    #add-secret-note-btn .btn-text {
+        display: none;
+    }
+    .secret-card {
+        padding: 16px;
+    }
+    .secret-card-actions {
+        top: 12px;
+        right: 12px;
+    }
 }
 
 .secret-text-hidden .secret-card-text {
@@ -705,6 +727,7 @@ input:focus, textarea:focus, select:focus {
     line-height: 1.5;
     white-space: pre-wrap;
     word-break: break-word;
+    padding-right: 36px;
 }
 .secret-card-text[contenteditable="true"] {
     outline: none;
