@@ -51,6 +51,12 @@
                     <li data-filter="Completed"><i class="fa-solid fa-circle-check"></i> Completed</li>
                 </ul>
             </div>
+            
+            <div class="sidebar-footer" style="margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+                <button id="export-backup-btn" class="secondary-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; padding: 10px 16px;"><i class="fa-solid fa-download"></i> Backup Data</button>
+                <button id="import-backup-btn" class="secondary-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; padding: 10px 16px;"><i class="fa-solid fa-upload"></i> Restore Data</button>
+                <input type="file" id="import-file-input" style="display: none;" accept=".json">
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -63,7 +69,8 @@
                         <i class="fa-solid fa-search"></i>
                         <input type="text" id="search-input" placeholder="Search tasks...">
                     </div>
-                    <button id="nav-secret-btn" class="icon-btn" title="Secret Notes"><i class="fa-solid fa-user-secret"></i></button>
+                    <button id="nav-secret-btn" class="icon-btn" title="Secret Notes"><i
+                            class="fa-solid fa-user-secret"></i></button>
                 </div>
                 <div class="header-actions">
                     <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
@@ -191,13 +198,18 @@
             <!-- Secret Notes View -->
             <div id="secret-notes-view" class="secret-notes-container hidden">
                 <div class="section-header">
-                    <h1>Secret Rules & Notes</h1>
+                    <h2>Secret Rules & Notes</h2>
                 </div>
-                <div class="secret-input-area" style="display: flex; gap: 12px; margin-bottom: 24px; align-items: flex-start;">
-                    <textarea id="secret-note-input" placeholder="What's the life lesson or secret rule?" style="flex: 1; padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--surface-color); color: var(--text-primary); font-size: 15px; outline: none; box-shadow: var(--shadow); resize: vertical; min-height: 80px; font-family: inherit;"></textarea>
-                    <button id="add-secret-note-btn" class="primary-btn" style="white-space: nowrap; padding: 14px 24px;"><i class="fa-solid fa-plus"></i> <span class="btn-text">Add Lesson</span></button>
+                <div class="secret-input-area"
+                    style="display: flex; gap: 12px; margin-bottom: 24px; align-items: flex-start;">
+                    <textarea id="secret-note-input" placeholder="What's the life lesson or secret rule?"
+                        style="flex: 1; padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--surface-color); color: var(--text-primary); font-size: 15px; outline: none; box-shadow: var(--shadow); resize: vertical; min-height: 80px; font-family: inherit;"></textarea>
+                    <button id="add-secret-note-btn" class="primary-btn"
+                        style="white-space: nowrap; padding: 14px 24px;"><i class="fa-solid fa-plus"></i> Add
+                        Lesson</button>
                 </div>
-                <div id="secret-notes-list" style="display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1;">
+                <div id="secret-notes-list"
+                    style="display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1;">
                     <!-- Secret cards injected here -->
                 </div>
             </div>

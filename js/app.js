@@ -405,14 +405,27 @@ function renderSecretNotes() {
         return;
     }
     
-    secretNotesData.forEach(note => {
+    // Sort notes so pinned ones are at the top
+    const sortedNotes = [...secretNotesData].sort((a, b) => {
+        const aPinned = a.pinned ? 1 : 0;
+        const bPinned = b.pinned ? 1 : 0;
+        return bPinned - aPinned;
+    });
+
+    sortedNotes.forEach(note => {
         const card = document.createElement('div');
         card.className = `secret-card ${note.color}`;
         card.dataset.id = note.id;
         card.innerHTML = `
-            <div class="secret-card-date"><i class="fa-regular fa-calendar"></i> ${note.date}</div>
+            <div class="secret-card-date">
+                <i class="fa-regular fa-calendar"></i> ${note.date}
+                ${note.pinned ? '<i class="fa-solid fa-thumb-tack" style="margin-left: 6px; transform: rotate(45deg); color: #fff;"></i>' : ''}
+            </div>
             <div class="secret-card-text">${escapeHTML(note.text)}</div>
             <div class="secret-card-actions">
+                <button class="secret-card-btn pin-btn ${note.pinned ? 'active' : ''}" onclick="togglePinSecretNote(event, ${note.id})">
+                    <i class="fa-solid fa-thumb-tack"></i>
+                </button>
                 <button class="secret-card-btn edit-btn" onclick="toggleEditSecretNote(event, ${note.id})"><i class="fa-solid fa-pen"></i></button>
             </div>
         `;
@@ -428,6 +441,15 @@ function saveSecretNotes() {
 window.deleteSecretNote = function(id) {
     if (confirm('Delete this secret note?')) {
         secretNotesData = secretNotesData.filter(n => n.id !== id);
+        saveSecretNotes();
+    }
+};
+
+window.togglePinSecretNote = function(event, id) {
+    event.stopPropagation();
+    const noteIdx = secretNotesData.findIndex(n => n.id === id);
+    if (noteIdx !== -1) {
+        secretNotesData[noteIdx].pinned = !secretNotesData[noteIdx].pinned;
         saveSecretNotes();
     }
 };
@@ -655,4 +677,63 @@ function renderDashboard() {
             `;
         });
     }
+}
+
+// Backup & Restore Logic
+const exportBtn = document.getElementById('export-backup-btn');
+const importBtn = document.getElementById('import-backup-btn');
+const importInput = document.getElementById('import-file-input');
+
+if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+        const data = {
+            tasks: JSON.parse(localStorage.getItem('tasks')) || [],
+            secret_notes_list: JSON.parse(localStorage.getItem('secret_notes_list')) || []
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `taskmaster_backup_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    });
+}
+
+if (importBtn && importInput) {
+    importBtn.addEventListener('click', () => importInput.click());
+    importInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                if (data.tasks || data.secret_notes_list) {
+                    if (data.tasks) {
+                        localStorage.setItem('tasks', JSON.stringify(data.tasks));
+                        tasks = data.tasks;
+                    }
+                    if (data.secret_notes_list) {
+                        localStorage.setItem('secret_notes_list', JSON.stringify(data.secret_notes_list));
+                        secretNotesData = data.secret_notes_list;
+                    }
+                    
+                    alert('Backup restored successfully!');
+                    
+                    // Refresh all views
+                    renderTasks();
+                    renderSecretNotes();
+                    updateDashboard();
+                } else {
+                    alert('Invalid backup file format.');
+                }
+            } catch (err) {
+                alert('Error reading backup file.');
+            }
+        };
+        reader.readAsText(file);
+        importInput.value = '';
+    });
 }

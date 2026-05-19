@@ -759,6 +759,15 @@ input:focus, textarea:focus, select:focus {
 .secret-card-btn:hover {
     background: rgba(255, 255, 255, 0.4);
 }
+.secret-card-btn.pin-btn.active {
+    background: rgba(255, 255, 255, 0.45);
+}
+.secret-card-btn.pin-btn.active i {
+    transform: rotate(45deg);
+}
+.secret-card-btn i {
+    transition: transform 0.2s;
+}
 
 .secret-color-1 { background: linear-gradient(135deg, #FF6B6B, #FF8E53); }
 .secret-color-2 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
