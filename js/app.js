@@ -492,7 +492,7 @@ if (addSecretNoteBtn && secretNoteInput) {
     });
     
     secretNoteInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addSecretNoteBtn.click();
+        if (e.key === 'Enter' && e.ctrlKey) addSecretNoteBtn.click();
     });
 }
 
