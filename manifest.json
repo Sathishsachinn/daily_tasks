@@ -1,0 +1,17 @@
+{
+  "name": "TaskMaster To-Do",
+  "short_name": "TaskMaster",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7fe",
+  "theme_color": "#4318FF",
+  "description": "A beautiful, premium task manager.",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
