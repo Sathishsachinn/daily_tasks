@@ -176,6 +176,7 @@ body.dark-mode .sidebar-menu li.active {
     color: var(--primary-color);
 }
 
+
 .primary-btn {
     background-color: var(--primary-color);
     color: white;
@@ -358,10 +359,10 @@ body.dark-mode .sidebar-menu li.active {
 }
 
 .dashboard-container.hidden {
-    display: none;
+    display: none !important;
 }
 .tasks-container.hidden {
-    display: none;
+    display: none !important;
 }
 
 .dashboard-header h1 {
@@ -653,3 +654,77 @@ input:focus, textarea:focus, select:focus {
     .modal-content { width: 92%; padding: 20px; max-height: 90vh; overflow-y: auto;}
     .form-row { flex-direction: column; gap: 0; }
 }
+
+.secret-text-hidden .secret-card-text {
+    color: transparent !important;
+    user-select: none;
+}
+
+.secret-card {
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    color: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+    touch-action: pan-y;
+    cursor: grab;
+}
+.secret-card:active {
+    cursor: grabbing;
+}
+.secret-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+.secret-card-date {
+    font-size: 12px;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.secret-card-text {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+.secret-card-text[contenteditable="true"] {
+    outline: none;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+}
+.secret-card-actions {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    gap: 8px;
+}
+.secret-card-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+.secret-card-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.secret-color-1 { background: linear-gradient(135deg, #FF6B6B, #FF8E53); }
+.secret-color-2 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.secret-color-3 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.secret-color-4 { background: linear-gradient(135deg, #fa709a, #fee140); }
+.secret-color-5 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }

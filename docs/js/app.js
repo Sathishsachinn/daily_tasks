@@ -12,6 +12,7 @@ const themeToggle = document.getElementById('theme-toggle');
 
 const dashboardView = document.getElementById('dashboard-view');
 const tasksView = document.getElementById('tasks-view');
+const secretNotesView = document.getElementById('secret-notes-view');
 
 const dashTotal = document.getElementById('dash-total');
 const dashCompleted = document.getElementById('dash-completed');
@@ -40,6 +41,9 @@ const closeModal = document.getElementById('close-modal');
 const cancelBtn = document.getElementById('cancel-btn');
 const taskForm = document.getElementById('task-form');
 const modalTitle = document.getElementById('modal-title');
+
+// Secret Notes Element
+const secretNotes = document.getElementById('secret-notes');
 
 // State
 let tasks = [];
@@ -291,16 +295,36 @@ sectionItems.forEach(item => {
         if (currentSection === 'Dashboard') {
             dashboardView.classList.remove('hidden');
             tasksView.classList.add('hidden');
+            if (secretNotesView) secretNotesView.classList.add('hidden');
+        } else if (currentSection === 'SecretNotes') {
+            dashboardView.classList.add('hidden');
+            tasksView.classList.add('hidden');
+            if (secretNotesView) secretNotesView.classList.remove('hidden');
         } else {
             dashboardView.classList.add('hidden');
             tasksView.classList.remove('hidden');
+            if (secretNotesView) secretNotesView.classList.add('hidden');
             currentSectionTitle.textContent = currentSection === 'All' ? 'All Tasks' : `${currentSection} Tasks`;
         }
         
-        renderTasks();
+        if (currentSection !== 'SecretNotes') renderTasks();
         closeSidebarOnMobile();
     });
 });
+
+const navSecretBtn = document.getElementById('nav-secret-btn');
+if (navSecretBtn) {
+    navSecretBtn.addEventListener('click', () => {
+        sectionItems.forEach(i => i.classList.remove('active'));
+        currentSection = 'SecretNotes';
+        
+        dashboardView.classList.add('hidden');
+        tasksView.classList.add('hidden');
+        if (secretNotesView) secretNotesView.classList.remove('hidden');
+        
+        closeSidebarOnMobile();
+    });
+}
 
 // Filters
 filterItems.forEach(item => {
@@ -360,6 +384,183 @@ cancelBtn.addEventListener('click', closeModalFunc);
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModalFunc();
 });
+
+// Secret Notes Logic
+let secretNotesData = JSON.parse(localStorage.getItem('secret_notes_list')) || [];
+const secretNoteInput = document.getElementById('secret-note-input');
+const addSecretNoteBtn = document.getElementById('add-secret-note-btn');
+const secretNotesList = document.getElementById('secret-notes-list');
+
+function renderSecretNotes() {
+    if (!secretNotesList) return;
+    secretNotesList.innerHTML = '';
+    
+    if (secretNotesData.length === 0) {
+        secretNotesList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                <i class="fa-solid fa-lock" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>No secret notes or life lessons yet.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    secretNotesData.forEach(note => {
+        const card = document.createElement('div');
+        card.className = `secret-card ${note.color}`;
+        card.dataset.id = note.id;
+        card.innerHTML = `
+            <div class="secret-card-date"><i class="fa-regular fa-calendar"></i> ${note.date}</div>
+            <div class="secret-card-text">${escapeHTML(note.text)}</div>
+            <div class="secret-card-actions">
+                <button class="secret-card-btn edit-btn" onclick="toggleEditSecretNote(event, ${note.id})"><i class="fa-solid fa-pen"></i></button>
+            </div>
+        `;
+        secretNotesList.appendChild(card);
+    });
+}
+
+function saveSecretNotes() {
+    localStorage.setItem('secret_notes_list', JSON.stringify(secretNotesData));
+    renderSecretNotes();
+}
+
+window.deleteSecretNote = function(id) {
+    if (confirm('Delete this secret note?')) {
+        secretNotesData = secretNotesData.filter(n => n.id !== id);
+        saveSecretNotes();
+    }
+};
+
+window.toggleEditSecretNote = function(event, id) {
+    event.stopPropagation();
+    
+    const card = document.querySelector(`.secret-card[data-id="${id}"]`);
+    if (!card) return;
+    
+    const textEl = card.querySelector('.secret-card-text');
+    const editBtn = card.querySelector('.edit-btn');
+    const isEditing = textEl.getAttribute('contenteditable') === 'true';
+    
+    if (isEditing) {
+        const newText = textEl.innerText.trim();
+        if (newText) {
+            const noteIdx = secretNotesData.findIndex(n => n.id === id);
+            if (noteIdx !== -1) {
+                secretNotesData[noteIdx].text = newText;
+                saveSecretNotes();
+            }
+        } else {
+            const note = secretNotesData.find(n => n.id === id);
+            if (note) textEl.textContent = note.text;
+        }
+        textEl.setAttribute('contenteditable', 'false');
+        editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+    } else {
+        textEl.setAttribute('contenteditable', 'true');
+        textEl.focus();
+        
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(textEl);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        
+        editBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+    }
+};
+
+if (addSecretNoteBtn && secretNoteInput) {
+    addSecretNoteBtn.addEventListener('click', () => {
+        const text = secretNoteInput.value.trim();
+        if (!text) return;
+        
+        const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const randomColor = `secret-color-${Math.floor(Math.random() * 5) + 1}`;
+        
+        const newNote = {
+            id: Date.now(),
+            text: text,
+            date: dateStr,
+            color: randomColor
+        };
+        
+        secretNotesData.unshift(newNote);
+        secretNoteInput.value = '';
+        saveSecretNotes();
+    });
+    
+    secretNoteInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addSecretNoteBtn.click();
+    });
+}
+
+// Initial render
+renderSecretNotes();
+
+// Swipe to Delete Logic
+let startX = 0;
+let currentX = 0;
+let swipingCard = null;
+const SWIPE_THRESHOLD = -100;
+
+if (secretNotesList) {
+    secretNotesList.addEventListener('pointerdown', (e) => {
+        const card = e.target.closest('.secret-card');
+        if (!card) return;
+        
+        const textEl = card.querySelector('.secret-card-text');
+        if (e.target.closest('.secret-card-actions') || (textEl && textEl.getAttribute('contenteditable') === 'true')) {
+            return;
+        }
+        
+        swipingCard = card;
+        startX = e.clientX;
+        currentX = 0;
+        
+        card.style.transition = 'none';
+        card.setPointerCapture(e.pointerId);
+    });
+
+    secretNotesList.addEventListener('pointermove', (e) => {
+        if (!swipingCard) return;
+        
+        const deltaX = e.clientX - startX;
+        
+        if (deltaX < 0) {
+            currentX = deltaX;
+            swipingCard.style.transform = `translateX(${currentX}px)`;
+            swipingCard.style.opacity = 1 - Math.abs(currentX) / (window.innerWidth * 0.8);
+        }
+    });
+
+    const finishSwipe = (e) => {
+        if (!swipingCard) return;
+        
+        swipingCard.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        
+        if (currentX < SWIPE_THRESHOLD) {
+            swipingCard.style.transform = `translateX(-100vw)`;
+            swipingCard.style.opacity = '0';
+            
+            const id = parseInt(swipingCard.dataset.id);
+            setTimeout(() => {
+                secretNotesData = secretNotesData.filter(n => n.id !== id);
+                saveSecretNotes();
+            }, 300);
+        } else {
+            swipingCard.style.transform = `translateX(0)`;
+            swipingCard.style.opacity = '1';
+        }
+        
+        if (e.pointerId) swipingCard.releasePointerCapture(e.pointerId);
+        swipingCard = null;
+    };
+
+    secretNotesList.addEventListener('pointerup', finishSwipe);
+    secretNotesList.addEventListener('pointercancel', finishSwipe);
+}
 
 // Theme Toggle
 themeToggle.addEventListener('click', () => {
